@@ -32,10 +32,10 @@ export default function FlashCard({ question, index, total, onNext, onPrev }: Pr
   }, [question.id])
 
   return (
-    <div className="flex flex-col items-center gap-6 w-full max-w-2xl mx-auto">
+    <div className="flex flex-col gap-5 w-full">
       {/* Meta row */}
-      <div className="w-full flex items-center justify-between text-sm text-gray-500">
-        <span>{index + 1} / {total}</span>
+      <div className="flex items-center justify-between text-sm text-gray-500">
+        <span className="tabular-nums">{index + 1} / {total}</span>
         <div className="flex gap-2">
           <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${DIFFICULTY_COLORS[question.difficulty]}`}>
             {question.difficulty}
@@ -54,36 +54,37 @@ export default function FlashCard({ question, index, total, onNext, onPrev }: Pr
         />
       </div>
 
-      {/* Flip card */}
+      {/* Flip card — grid-stacking lets height grow with content */}
       <div
         className="w-full cursor-pointer select-none"
-        style={{ perspective: '1000px' }}
+        style={{ perspective: '1200px' }}
         onClick={() => setFlipped(f => !f)}
       >
         <div
-          className="relative w-full transition-transform duration-500"
           style={{
+            display: 'grid',
             transformStyle: 'preserve-3d',
             transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-            minHeight: '320px',
+            transition: 'transform 0.45s ease',
           }}
         >
           {/* Front */}
           <div
-            className="absolute inset-0 bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col items-center justify-center p-8 gap-4"
-            style={{ backfaceVisibility: 'hidden' }}
+            className="bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col items-center justify-center p-8 gap-4 min-h-52"
+            style={{ gridArea: '1/1', backfaceVisibility: 'hidden' }}
           >
             <div className="text-xs font-semibold text-indigo-500 uppercase tracking-widest">Question</div>
             <p className="text-xl font-medium text-gray-900 text-center leading-relaxed">
               {question.question}
             </p>
-            <div className="text-sm text-gray-400 mt-4">click to reveal answer</div>
+            <div className="text-sm text-gray-400 mt-2">click to reveal answer</div>
           </div>
 
           {/* Back */}
           <div
-            className="absolute inset-0 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm flex flex-col p-8 gap-4 overflow-auto"
+            className="bg-gray-50 border border-gray-200 rounded-2xl shadow-sm flex flex-col p-8 gap-4 min-h-52"
             style={{
+              gridArea: '1/1',
               backfaceVisibility: 'hidden',
               transform: 'rotateY(180deg)',
             }}
@@ -91,7 +92,7 @@ export default function FlashCard({ question, index, total, onNext, onPrev }: Pr
             <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest">Answer</div>
             <p className="text-base text-gray-800 leading-relaxed">{question.answer}</p>
             {question.codeExample && (
-              <pre className="bg-gray-900 text-gray-100 rounded-xl p-4 text-sm overflow-x-auto whitespace-pre-wrap mt-2 font-mono">
+              <pre className="bg-gray-900 text-gray-100 rounded-xl p-4 text-sm overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed">
                 <code>{question.codeExample}</code>
               </pre>
             )}
@@ -99,31 +100,31 @@ export default function FlashCard({ question, index, total, onNext, onPrev }: Pr
         </div>
       </div>
 
-      {/* Navigation */}
-      <div className="flex gap-3">
+      {/* Navigation buttons */}
+      <div className="flex items-center justify-between gap-3">
         <button
-          onClick={onPrev}
+          onClick={(e) => { e.stopPropagation(); onPrev() }}
           disabled={index === 0}
-          className="px-5 py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm"
+          className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm font-medium"
         >
           ← Prev
         </button>
         <button
-          onClick={() => setFlipped(f => !f)}
-          className="px-5 py-2 rounded-xl border border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-colors text-sm"
+          onClick={(e) => { e.stopPropagation(); setFlipped(f => !f) }}
+          className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors text-sm font-medium"
         >
-          Flip
+          {flipped ? 'Hide answer' : 'Show answer'}
         </button>
         <button
-          onClick={onNext}
+          onClick={(e) => { e.stopPropagation(); onNext() }}
           disabled={index === total - 1}
-          className="px-5 py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm"
+          className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm font-medium"
         >
           Next →
         </button>
       </div>
 
-      <p className="text-xs text-gray-400">space to flip · ← → to navigate</p>
+      <p className="text-xs text-gray-400 text-center">space to flip · ← → to navigate</p>
     </div>
   )
 }
