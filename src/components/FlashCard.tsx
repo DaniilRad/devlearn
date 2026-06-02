@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, RotateCw } from 'lucide-react'
 import type { Question } from '../types'
 
@@ -10,6 +10,8 @@ interface Props {
   onPrev: () => void
 }
 
+const FLIP_MS = 400
+
 const DIFFICULTY_STYLES = {
   junior: 'text-green-400 dark:text-green-400 text-green-600',
   mid:    'text-amber-400 dark:text-amber-400 text-amber-600',
@@ -18,8 +20,36 @@ const DIFFICULTY_STYLES = {
 
 export default function FlashCard({ question, index, total, onNext, onPrev }: Props) {
   const [flipped, setFlipped] = useState(false)
+  // Displayed content lags behind `question` when navigating away from the back face,
+  // so the answer text is never visible during the flip-back animation.
+  const [displayed, setDisplayed] = useState(question)
+  const flippedRef = useRef(flipped)
+  flippedRef.current = flipped
 
-  useEffect(() => { setFlipped(false) }, [question.id])
+  useEffect(() => {
+    if (flippedRef.current) {
+      // Currently showing answer — flip to front first, swap content after animation.
+      setFlipped(false)
+      const t = setTimeout(() => setDisplayed(question), FLIP_MS + 50)
+      return () => clearTimeout(t)
+    } else {
+      // Already on front — swap immediately, no visible change.
+      setDisplayed(question)
+    }
+  }, [question.id]) // intentionally not including `flipped` — only react to card changes
+
+  // Space to flip
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      if (e.key === ' ') {
+        e.preventDefault()
+        setFlipped(f => !f)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
 
   const pct = ((index + 1) / total) * 100
 
@@ -31,11 +61,11 @@ export default function FlashCard({ question, index, total, onNext, onPrev }: Pr
           [{index + 1}/{total}]
         </span>
         <div className="flex items-center gap-3">
-          <span className={DIFFICULTY_STYLES[question.difficulty]}>
-            {question.difficulty}
+          <span className={DIFFICULTY_STYLES[displayed.difficulty]}>
+            {displayed.difficulty}
           </span>
           <span className="text-neutral-500 dark:text-neutral-600">
-            {question.topic}
+            {displayed.topic}
           </span>
         </div>
       </div>
@@ -59,7 +89,7 @@ export default function FlashCard({ question, index, total, onNext, onPrev }: Pr
             display: 'grid',
             transformStyle: 'preserve-3d',
             transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-            transition: 'transform 0.4s ease',
+            transition: `transform ${FLIP_MS}ms ease`,
           }}
         >
           {/* Front */}
@@ -75,7 +105,7 @@ export default function FlashCard({ question, index, total, onNext, onPrev }: Pr
               &gt;_ question
             </div>
             <p className="text-lg text-neutral-100 dark:text-neutral-100 text-neutral-900 leading-relaxed flex-1">
-              {question.question}
+              {displayed.question}
             </p>
             <div className="text-xs text-neutral-600 dark:text-neutral-600 text-neutral-400">
               // click or press space to reveal
@@ -99,9 +129,9 @@ export default function FlashCard({ question, index, total, onNext, onPrev }: Pr
               &gt;_ answer
             </div>
             <p className="text-sm text-neutral-300 dark:text-neutral-300 text-neutral-700 leading-relaxed">
-              {question.answer}
+              {displayed.answer}
             </p>
-            {question.codeExample && (
+            {displayed.codeExample && (
               <div className="border border-neutral-800 dark:border-neutral-800 border-neutral-200">
                 <div className="px-4 py-2 border-b border-neutral-800 dark:border-neutral-800 border-neutral-200 text-xs text-neutral-600 dark:text-neutral-600 text-neutral-400">
                   // code
@@ -111,7 +141,7 @@ export default function FlashCard({ question, index, total, onNext, onPrev }: Pr
                   text-green-400 dark:text-green-400 text-green-700
                   p-4 text-xs overflow-x-auto leading-relaxed
                 ">
-                  <code>{question.codeExample}</code>
+                  <code>{displayed.codeExample}</code>
                 </pre>
               </div>
             )}
