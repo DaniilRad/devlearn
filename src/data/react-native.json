@@ -1,0 +1,72 @@
+[
+  {
+    "id": "rn-01",
+    "topic": "react-native",
+    "difficulty": "senior",
+    "question": "What is the React Native New Architecture? What problems does it solve?",
+    "answer": "The Old Architecture used the Bridge — async, batched JSON serialization between JS and native threads. Every crossing was expensive and non-deterministic. New Architecture replaces it with: (1) JSI — synchronous, direct C++ interface (no serialization), (2) Fabric — reimplemented UI layer as C++ core with synchronous rendering, (3) Turbo Modules — lazy-loaded native modules accessible directly via JSI. Result: synchronous native calls, smaller startup time, better concurrent React support."
+  },
+  {
+    "id": "rn-02",
+    "topic": "react-native",
+    "difficulty": "senior",
+    "question": "What is JSI (JavaScript Interface)?",
+    "answer": "JSI is a C++ API that allows JavaScript to hold references to C++ objects and call their methods synchronously. Unlike the Bridge (which serialized everything to JSON and sent messages async), JSI provides a direct host-object interface. This means JS can call native code without waiting for an async round-trip, enabling real-time operations like gesture handling and synchronous storage reads."
+  },
+  {
+    "id": "rn-03",
+    "topic": "react-native",
+    "difficulty": "senior",
+    "question": "What is Fabric in React Native?",
+    "answer": "Fabric is the New Architecture renderer — a rewrite of the UIManager in C++. It moves view creation, updates, and layout calculations to C++ (shared between iOS and Android). Fabric enables synchronous rendering, direct access to the shadow tree from JS via JSI, and better integration with React's concurrent mode (priorities, scheduling)."
+  },
+  {
+    "id": "rn-04",
+    "topic": "react-native",
+    "difficulty": "mid",
+    "question": "How would you design an offline-first architecture in React Native?",
+    "answer": "Offline-first means the local store is the source of truth — reads always come from local storage (SQLite, MMKV, WatermelonDB), never blocked on network. Writes go to local first, then sync to server in the background. Key components: local database, a sync queue for outgoing changes, a conflict resolution strategy, and network state awareness (NetInfo). The UI should never wait for network — show local data immediately, update when sync completes."
+  },
+  {
+    "id": "rn-05",
+    "topic": "react-native",
+    "difficulty": "senior",
+    "question": "What conflict resolution strategies exist for offline sync?",
+    "answer": "Last-Write-Wins (LWW): simplest — whichever write has the later timestamp wins. Works when conflicts are rare and data loss is acceptable. Three-way merge: compare common ancestor, local version, and server version to auto-merge non-conflicting fields. CRDTs (Conflict-free Replicated Data Types): data structures that merge deterministically without coordination (e.g., counters, sets). Operational Transformation: used in collaborative editors, transforms operations against concurrent ops. For most apps: LWW with a per-field timestamp is practical; CRDTs for shared collaborative data."
+  },
+  {
+    "id": "rn-06",
+    "topic": "react-native",
+    "difficulty": "mid",
+    "question": "How do you handle large lists with thousands of items in React Native?",
+    "answer": "FlatList / FlashList over ScrollView — they virtualize (render only visible items). FlashList (from Shopify) is significantly faster than FlatList for homogeneous lists. Key optimizations: getItemLayout for fixed-height items (skips measurement), keyExtractor for stable identity, removeClippedSubviews, windowSize tuning. For heterogeneous data with filters, paginate server-side and load incrementally rather than dumping 10k items at once."
+  },
+  {
+    "id": "rn-07",
+    "topic": "react-native",
+    "difficulty": "junior",
+    "question": "What is the difference between React Native and Flutter? When would you choose each?",
+    "answer": "React Native: JS/TS + native components (real iOS/Android UI primitives). Larger ecosystem, easier web-developer onboarding, OTA updates possible. Flutter: Dart + custom rendering engine (Skia/Impeller) — pixel-perfect cross-platform, no native components. Better for design-heavy apps where you want identical UI on all platforms. Choose RN when: you have a web team, need native look-and-feel, or need to integrate deeply with native libraries. Choose Flutter when: design consistency across platforms matters more than native feel."
+  },
+  {
+    "id": "rn-08",
+    "topic": "react-native",
+    "difficulty": "mid",
+    "question": "What is Metro and what role does it play in React Native?",
+    "answer": "Metro is the JavaScript bundler for React Native (developed by Meta). Unlike Webpack (for web), Metro is optimized for mobile: it uses a module graph, watches for changes, and serves bundles over HTTP during development. It handles transforms (Babel), resolves imports, and produces the JS bundle loaded by the native app. For production builds, Metro compiles a hermetic bundle stored in the app binary."
+  },
+  {
+    "id": "rn-09",
+    "topic": "react-native",
+    "difficulty": "mid",
+    "question": "What is Hermes and why does React Native use it?",
+    "answer": "Hermes is a JavaScript engine built by Meta specifically for React Native. Unlike V8 or JavaScriptCore, Hermes precompiles JS to bytecode at build time — this means startup time is drastically reduced (no parse/compile on device). Hermes also has a smaller memory footprint and integrates better with the RN debugger. It's the default engine for RN apps since RN 0.70."
+  },
+  {
+    "id": "rn-10",
+    "topic": "react-native",
+    "difficulty": "senior",
+    "question": "How would you design a telemetry app for field operators with poor/intermittent connectivity?",
+    "answer": "Local-first: all reads from local DB (SQLite/WatermelonDB), writes to local first. Sync engine in background: queue changes with timestamps, retry with exponential backoff, batch uploads. Connectivity layer: NetInfo to detect state, pause sync when offline, trigger sync on reconnect. Data priorities: critical telemetry (safety alerts) sync first; bulk historical data sync last. Conflict strategy: LWW per sensor reading (append-only data is conflict-free). Optimistic UI: show local writes immediately, reconcile when server confirms."
+  }
+]

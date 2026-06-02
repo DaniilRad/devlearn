@@ -1,0 +1,79 @@
+[
+  {
+    "id": "js-01",
+    "topic": "js-core",
+    "difficulty": "junior",
+    "question": "What is the event loop and how does it work?",
+    "answer": "JavaScript is single-threaded — it has one call stack. The event loop continuously checks if the call stack is empty. When it is, it takes the first callback from the task queue (macrotasks: setTimeout, setInterval, I/O) and pushes it onto the stack. Microtasks (Promises, queueMicrotask) drain completely before the next macrotask runs.",
+    "codeExample": "console.log('1');\nsetTimeout(() => console.log('2'), 0);\nPromise.resolve().then(() => console.log('3'));\nconsole.log('4');\n// Output: 1, 4, 3, 2\n// Reason: sync first, then microtasks (Promise), then macrotasks (setTimeout)"
+  },
+  {
+    "id": "js-02",
+    "topic": "js-core",
+    "difficulty": "junior",
+    "question": "What is a closure?",
+    "answer": "A closure is a function that retains access to variables from its outer (enclosing) scope even after that outer function has returned. The inner function closes over the variables — they stay alive in memory as long as the inner function exists.",
+    "codeExample": "function makeCounter() {\n  let count = 0;\n  return () => ++count;\n}\nconst counter = makeCounter();\nconsole.log(counter()); // 1\nconsole.log(counter()); // 2\n// count is captured in the closure — not re-initialized each call"
+  },
+  {
+    "id": "js-03",
+    "topic": "js-core",
+    "difficulty": "junior",
+    "question": "What is the prototype chain?",
+    "answer": "Every JavaScript object has an internal [[Prototype]] link to another object (or null). When you access a property, JS looks on the object first, then walks up the chain through [[Prototype]] links until it finds the property or hits null. This is how inheritance works without classes in JS.",
+    "codeExample": "const animal = { breathes: true };\nconst dog = Object.create(animal);\ndog.barks = true;\n\nconsole.log(dog.barks);   // true  (own property)\nconsole.log(dog.breathes); // true  (found on prototype)\nconsole.log(dog.hasOwnProperty('breathes')); // false"
+  },
+  {
+    "id": "js-04",
+    "topic": "js-core",
+    "difficulty": "junior",
+    "question": "What is the difference between var, let, and const?",
+    "answer": "var is function-scoped, hoisted (initialized to undefined), and can be re-declared. let is block-scoped, hoisted but in a Temporal Dead Zone (can't be read before declaration), and can be re-assigned. const is block-scoped, TDZ, and cannot be re-assigned (but object contents can be mutated)."
+  },
+  {
+    "id": "js-05",
+    "topic": "js-core",
+    "difficulty": "mid",
+    "question": "What is the difference between Promise.all, Promise.allSettled, Promise.race, and Promise.any?",
+    "answer": "Promise.all — resolves when ALL resolve, rejects immediately on first rejection. Promise.allSettled — always resolves after all settle, returns array of {status, value/reason}. Promise.race — settles (resolves or rejects) as soon as the FIRST promise settles. Promise.any — resolves with the FIRST fulfilled promise, rejects only if ALL reject (AggregateError).",
+    "codeExample": "const p1 = Promise.resolve(1);\nconst p2 = Promise.reject('err');\nconst p3 = Promise.resolve(3);\n\nPromise.allSettled([p1, p2, p3]).then(results =>\n  results.forEach(r => console.log(r.status, r.value ?? r.reason))\n);\n// fulfilled 1\n// rejected  err\n// fulfilled 3"
+  },
+  {
+    "id": "js-06",
+    "topic": "js-core",
+    "difficulty": "mid",
+    "question": "Explain 'this' binding — what does 'this' refer to in different contexts?",
+    "answer": "Default binding: in non-strict mode, this is the global object (window/global); in strict mode, undefined. Implicit binding: this is the object before the dot when calling a method. Explicit binding: call/apply/bind set this explicitly. new binding: this is the newly created object. Arrow functions: no own this — they capture this from the enclosing lexical scope.",
+    "codeExample": "const obj = {\n  name: 'obj',\n  regular() { return this.name; },    // 'obj'\n  arrow: () => this?.name,             // undefined (lexical this)\n};\n\nconst fn = obj.regular;\nfn(); // undefined (lost binding)\nfn.call(obj); // 'obj' (explicit binding)"
+  },
+  {
+    "id": "js-07",
+    "topic": "js-core",
+    "difficulty": "mid",
+    "question": "What is a WeakMap and when would you use it?",
+    "answer": "WeakMap holds key-value pairs where keys must be objects and are held weakly — if no other reference to the key object exists, it can be garbage collected along with its WeakMap entry. No iteration, no size. Use cases: private per-object data without memory leaks, caching computed values tied to DOM nodes."
+  },
+  {
+    "id": "js-08",
+    "topic": "js-core",
+    "difficulty": "junior",
+    "question": "What is the difference between == and ===?",
+    "answer": "=== (strict equality) compares value AND type — no coercion. == (loose equality) performs type coercion before comparing, following the Abstract Equality Comparison algorithm. Loose equality has surprising results (null == undefined is true, 0 == '' is true). Always prefer === unless you specifically need the coercion."
+  },
+  {
+    "id": "js-09",
+    "topic": "js-core",
+    "difficulty": "senior",
+    "question": "What is the Temporal Dead Zone (TDZ)?",
+    "answer": "The TDZ is the period between entering a scope where a let/const variable is declared and the line where that declaration is executed. Accessing the variable during the TDZ throws a ReferenceError. The variable is hoisted (the binding exists) but is not initialized yet — this is different from var, which is hoisted AND initialized to undefined.",
+    "codeExample": "console.log(x); // ReferenceError: Cannot access 'x' before initialization\nlet x = 5;"
+  },
+  {
+    "id": "js-10",
+    "topic": "js-core",
+    "difficulty": "senior",
+    "question": "What is a generator function and what are its use cases?",
+    "answer": "A generator function (function*) returns a Generator object — an iterator that pauses at each yield and resumes on .next(). It can produce infinite sequences lazily, implement co-routines, or serve as the basis for async/await (which is syntactic sugar over generators + Promises). Use cases: lazy evaluation, custom iterables, cancellable async flows.",
+    "codeExample": "function* range(start, end) {\n  for (let i = start; i <= end; i++) yield i;\n}\n\nfor (const n of range(1, 5)) console.log(n); // 1 2 3 4 5"
+  }
+]

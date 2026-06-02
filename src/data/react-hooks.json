@@ -1,0 +1,78 @@
+[
+  {
+    "id": "hooks-01",
+    "topic": "react-hooks",
+    "difficulty": "junior",
+    "question": "What is the difference between useState and useReducer?",
+    "answer": "useState is for simple, independent state values. useReducer is better when: next state depends on previous state in complex ways, you have multiple related state values that change together, or you want to centralize update logic (like a mini Redux). useReducer takes (state, action) => newState — the reducer must be pure.",
+    "codeExample": "const [state, dispatch] = useReducer(reducer, initialState);\n\nfunction reducer(state, action) {\n  switch (action.type) {\n    case 'increment': return { count: state.count + 1 };\n    case 'reset':     return { count: 0 };\n    default: return state;\n  }\n}"
+  },
+  {
+    "id": "hooks-02",
+    "topic": "react-hooks",
+    "difficulty": "junior",
+    "question": "What is the dependency array in useEffect and how does it work?",
+    "answer": "The dependency array tells React when to re-run the effect. Empty array [] — run once after mount. [a, b] — run after mount and whenever a or b changes (by reference equality). No array — run after every render. React compares deps with Object.is — avoid object/array literals as deps, they create new references every render."
+  },
+  {
+    "id": "hooks-03",
+    "topic": "react-hooks",
+    "difficulty": "mid",
+    "question": "What is the cleanup function in useEffect and when is it called?",
+    "answer": "Return a function from useEffect to clean up side effects. React calls it (1) before running the effect again (on dependency change) and (2) when the component unmounts. Use it to cancel subscriptions, clear timers, abort fetch requests, or remove event listeners — anything that would leak if left running.",
+    "codeExample": "useEffect(() => {\n  const controller = new AbortController();\n  fetch(url, { signal: controller.signal })\n    .then(r => r.json())\n    .then(setData);\n  return () => controller.abort(); // cleanup on unmount or url change\n}, [url]);"
+  },
+  {
+    "id": "hooks-04",
+    "topic": "react-hooks",
+    "difficulty": "mid",
+    "question": "What is useCallback and when should you actually use it?",
+    "answer": "useCallback returns a memoized function that only changes when its dependencies change. It's NOT a free performance win — it adds overhead from the cache check. Use it only when: (1) passing callbacks as props to memo-wrapped child components, or (2) a callback is listed as a useEffect dependency. Don't apply it everywhere blindly.",
+    "codeExample": "const handleClick = useCallback(() => {\n  doSomething(id);\n}, [id]); // stable reference unless id changes\n\n// Useful when:\n<HeavyChild onClick={handleClick} /> // where HeavyChild = React.memo(...)"
+  },
+  {
+    "id": "hooks-05",
+    "topic": "react-hooks",
+    "difficulty": "mid",
+    "question": "useMemo vs useCallback — what's the difference?",
+    "answer": "useCallback memoizes a function itself (returns the same function reference). useMemo memoizes the return value of a function (computes a value and caches it). useCallback(fn, deps) === useMemo(() => fn, deps). Use useMemo for expensive computations; use useCallback for stable function references."
+  },
+  {
+    "id": "hooks-06",
+    "topic": "react-hooks",
+    "difficulty": "junior",
+    "question": "What is useRef and what are its use cases?",
+    "answer": "useRef returns a mutable object { current: value } whose .current can be set without triggering a re-render. Two main uses: (1) accessing DOM nodes directly (passing ref to JSX elements), (2) storing any mutable value that should persist across renders but doesn't need to trigger re-renders (e.g., previous value, timer ID, instance variable).",
+    "codeExample": "// DOM access\nconst inputRef = useRef<HTMLInputElement>(null);\n<input ref={inputRef} />\nconst focus = () => inputRef.current?.focus();\n\n// Persist mutable value without re-render\nconst timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);\n// timerRef.current = setTimeout(...)"
+  },
+  {
+    "id": "hooks-07",
+    "topic": "react-hooks",
+    "difficulty": "mid",
+    "question": "How do you write a custom hook and what makes it a 'hook'?",
+    "answer": "A custom hook is any function whose name starts with use and that may call other hooks. It's just a way to extract and share stateful logic without duplicating code across components. Custom hooks can return whatever the consumer needs — values, callbacks, refs, state setters.",
+    "codeExample": "function useLocalStorage<T>(key: string, initial: T) {\n  const [value, setValue] = useState<T>(() => {\n    const stored = localStorage.getItem(key);\n    return stored ? JSON.parse(stored) : initial;\n  });\n\n  const set = (v: T) => {\n    setValue(v);\n    localStorage.setItem(key, JSON.stringify(v));\n  };\n\n  return [value, set] as const;\n}"
+  },
+  {
+    "id": "hooks-08",
+    "topic": "react-hooks",
+    "difficulty": "junior",
+    "question": "What are the Rules of Hooks?",
+    "answer": "1. Only call hooks at the top level — never inside loops, conditions, or nested functions. React relies on call order to associate state with the right hook across renders. 2. Only call hooks from React function components or custom hooks — not regular JS functions. The ESLint plugin eslint-plugin-react-hooks enforces these."
+  },
+  {
+    "id": "hooks-09",
+    "topic": "react-hooks",
+    "difficulty": "mid",
+    "question": "What is useLayoutEffect and how is it different from useEffect?",
+    "answer": "Both run after render. useEffect fires asynchronously after the browser has painted — non-blocking, safer for most cases. useLayoutEffect fires synchronously after DOM mutations but before the browser paints — use it when you need to read or mutate the DOM before the user sees it (e.g., measuring an element's size to position a tooltip). Prefer useEffect unless you see visual flicker."
+  },
+  {
+    "id": "hooks-10",
+    "topic": "react-hooks",
+    "difficulty": "senior",
+    "question": "What are useTransition and useDeferredValue? When would you use each?",
+    "answer": "Both are React 18 concurrent features that mark updates as low-priority. useTransition: wraps a state update in startTransition, telling React 'this update can be interrupted by urgent updates'. Returns isPending flag. useDeferredValue: defers the value of a prop — React keeps showing the old value while computing the new render in the background. Use useTransition when you control the state update; use useDeferredValue when you receive a prop you can't control.",
+    "codeExample": "const [isPending, startTransition] = useTransition();\n\nconst handleSearch = (q: string) => {\n  setQuery(q); // urgent: update the input\n  startTransition(() => setResults(filter(q))); // low-priority: filter 10k items\n};"
+  }
+]

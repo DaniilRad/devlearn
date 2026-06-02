@@ -1,0 +1,38 @@
+[
+  {
+    "id": "arch-01",
+    "topic": "architecture",
+    "difficulty": "mid",
+    "question": "Explain CSR, SSR, SSG, and ISR — what problem does each solve?",
+    "answer": "CSR (Client-Side Rendering): HTML shell, JS fetches data in browser. Fast subsequent nav, poor initial load + SEO. SSR (Server-Side Rendering): full HTML per request from server. Good SEO + fast first paint, but more server load and no caching without effort. SSG (Static Site Generation): HTML generated at build time. Fastest possible delivery, great for CDN caching, but stale data until rebuild. ISR (Incremental Static Regeneration — Next.js): SSG pages revalidate in the background on a schedule. You get SSG speed with fresher data — best of both worlds for content sites."
+  },
+  {
+    "id": "arch-02",
+    "topic": "architecture",
+    "difficulty": "mid",
+    "question": "What state management patterns do you know and when do you reach for each?",
+    "answer": "Local state (useState): component owns it, no sharing needed. Lifted state: shared by siblings — lift to common ancestor. Context: global, slow-changing values (theme, auth). Zustand / Jotai: simple global state without Redux boilerplate — great for most apps. Redux Toolkit: complex derived state, time-travel debugging, large teams needing predictable patterns. React Query / SWR: server state (fetching, caching, invalidation) — not the same as UI state, treat separately. Rule of thumb: use the simplest thing that works; add complexity only when needed."
+  },
+  {
+    "id": "arch-03",
+    "topic": "architecture",
+    "difficulty": "mid",
+    "question": "How would you approach testing a React application?",
+    "answer": "Testing trophy (Kent C. Dodds, not the pyramid): prioritize integration tests. Unit tests: pure utility functions, complex business logic. Integration tests (React Testing Library): render a component tree, interact like a user, assert on what's visible — not on implementation details. E2E tests (Playwright/Cypress): critical user flows (login, checkout). Avoid: testing implementation details (state, internal methods), snapshot tests that break on every style change, mocking too deeply."
+  },
+  {
+    "id": "arch-04",
+    "topic": "architecture",
+    "difficulty": "senior",
+    "question": "What is the Flux architecture and how does Redux implement it?",
+    "answer": "Flux: unidirectional data flow — Action → Dispatcher → Store → View → (new Action). No two-way binding. Redux is a Flux implementation with one global store (vs multiple stores in original Flux). The reducer is a pure function (prevState, action) => newState. Redux adds: single store, pure reducers, time-travel via state snapshots. Redux Toolkit (RTK) modernizes it with createSlice, Immer for immutable updates, and RTK Query for data fetching."
+  },
+  {
+    "id": "arch-05",
+    "topic": "architecture",
+    "difficulty": "senior",
+    "question": "What is React.memo, when should you use it, and what are its pitfalls?",
+    "answer": "React.memo wraps a component and skips re-rendering if props are shallowly equal to the previous render. Useful for expensive components receiving the same props often. Pitfalls: (1) object/function props created inline defeat memoization — you need useMemo/useCallback too, (2) it's a hint, not a guarantee — React may still re-render, (3) premature memoization adds overhead without benefit for cheap components. Profile first, memoize second.",
+    "codeExample": "const HeavyList = React.memo(({ items }: { items: Item[] }) => {\n  return <ul>{items.map(i => <li key={i.id}>{i.name}</li>)}</ul>;\n});\n\n// Parent must stabilize the reference:\nconst items = useMemo(() => computeItems(data), [data]);"
+  }
+]

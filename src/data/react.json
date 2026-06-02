@@ -1,0 +1,75 @@
+[
+  {
+    "id": "react-01",
+    "topic": "react",
+    "difficulty": "junior",
+    "question": "How does the virtual DOM work and what problem does it solve?",
+    "answer": "The virtual DOM (vDOM) is an in-memory representation of the real DOM tree as a lightweight JavaScript object. When state changes, React creates a new vDOM tree and diffs it against the previous one (reconciliation). Only the changed nodes are applied to the real DOM — batching expensive DOM mutations. This solves the perf problem of naive 'innerHTML on every update'."
+  },
+  {
+    "id": "react-02",
+    "topic": "react",
+    "difficulty": "mid",
+    "question": "What is reconciliation and what is the diffing algorithm?",
+    "answer": "Reconciliation is React's process of comparing the new vDOM tree with the previous one to compute the minimal set of real DOM changes. The diffing algorithm has two heuristics: (1) Elements of different types produce completely different trees — React destroys and rebuilds. (2) The key prop signals identity across renders — stable keys allow efficient list diffing without destroying state."
+  },
+  {
+    "id": "react-03",
+    "topic": "react",
+    "difficulty": "junior",
+    "question": "What are React keys and why do they matter?",
+    "answer": "Keys help React identify which list items changed, were added, or removed. Without keys (or with index keys), React re-renders the wrong components when the list order changes, causing state bugs. Keys should be stable, unique IDs — not array indexes if the list can be reordered or filtered.",
+    "codeExample": "// Bad — index as key breaks state when list reorders\n{items.map((item, i) => <Item key={i} data={item} />)}\n\n// Good — stable unique ID\n{items.map(item => <Item key={item.id} data={item} />)}"
+  },
+  {
+    "id": "react-04",
+    "topic": "react",
+    "difficulty": "junior",
+    "question": "What is the difference between controlled and uncontrolled components?",
+    "answer": "Controlled: form element value is driven by React state. Every change updates state via onChange, and React re-renders. Single source of truth in JS. Uncontrolled: the DOM owns the value; you read it via a ref when needed (e.g., on submit). Controlled is preferred for validation/conditional logic; uncontrolled is simpler for basic file inputs or when integrating with non-React code.",
+    "codeExample": "// Controlled\nconst [val, setVal] = useState('');\n<input value={val} onChange={e => setVal(e.target.value)} />\n\n// Uncontrolled\nconst ref = useRef<HTMLInputElement>(null);\n<input ref={ref} />\n// read with ref.current?.value"
+  },
+  {
+    "id": "react-05",
+    "topic": "react",
+    "difficulty": "mid",
+    "question": "When does a React component re-render?",
+    "answer": "A component re-renders when: (1) its own state changes (useState/useReducer dispatch), (2) its parent re-renders (unless wrapped in React.memo), (3) a context it consumes changes. A re-render does not mean a DOM update — React still diffs the output and only commits what changed."
+  },
+  {
+    "id": "react-06",
+    "topic": "react",
+    "difficulty": "mid",
+    "question": "When would you use Context vs prop drilling vs a state management library?",
+    "answer": "Prop drilling: fine for 1-2 levels. Context: for globally shared, infrequently changing values (theme, locale, auth user) — but every consumer re-renders on every context change, so avoid putting fast-changing data in one big context. State management library (Zustand, Redux): when you need shared, frequently updated state, derived state, or time-travel debugging."
+  },
+  {
+    "id": "react-07",
+    "topic": "react",
+    "difficulty": "junior",
+    "question": "What is React.StrictMode and what does it do?",
+    "answer": "StrictMode is a development-only wrapper that intentionally double-invokes render functions and effects to help surface side effects in non-pure components. It also warns about deprecated APIs and unsafe lifecycle patterns. Has no effect in production builds."
+  },
+  {
+    "id": "react-08",
+    "topic": "react",
+    "difficulty": "mid",
+    "question": "What are React design patterns? Explain HOC, render props, and compound components.",
+    "answer": "HOC (Higher-Order Component): a function that takes a component and returns a new enhanced component — good for cross-cutting concerns (auth, analytics). Render props: pass a function as a prop to share stateful logic without HOCs. Compound components: a set of components that share implicit state via Context (e.g., <Select> + <Select.Option>) — great for flexible, composable APIs.",
+    "codeExample": "// Compound component pattern\n<Tabs defaultTab='a'>\n  <Tabs.List>\n    <Tabs.Tab id='a'>Tab A</Tabs.Tab>\n  </Tabs.List>\n  <Tabs.Panel id='a'>Content A</Tabs.Panel>\n</Tabs>"
+  },
+  {
+    "id": "react-09",
+    "topic": "react",
+    "difficulty": "junior",
+    "question": "What does 'lifting state up' mean?",
+    "answer": "When two sibling components need to share state, move the state to their closest common ancestor. The ancestor holds the state and passes it down via props. This keeps a single source of truth and avoids the sibling sync problem."
+  },
+  {
+    "id": "react-10",
+    "topic": "react",
+    "difficulty": "senior",
+    "question": "What is React Fiber and how does it enable concurrent features?",
+    "answer": "Fiber is React's internal reconciliation engine (rewritten in React 16). It breaks rendering into small units of work (fibers) that can be paused, aborted, or prioritized. This enables concurrent mode: React can interrupt a low-priority render to handle urgent updates (e.g., user input), then resume. This is the foundation for useTransition, useDeferredValue, and Suspense."
+  }
+]

@@ -1,0 +1,80 @@
+[
+  {
+    "id": "ts-01",
+    "topic": "typescript",
+    "difficulty": "junior",
+    "question": "What is the difference between interface and type in TypeScript?",
+    "answer": "Both describe object shapes, but: interfaces are open (can be re-declared/merged), types are closed. Types can represent unions, intersections, primitives, and tuples — interfaces cannot. Interfaces are generally preferred for object shapes (they give better error messages), types for complex compositions. In practice, use interface for objects you'll extend, type for everything else.",
+    "codeExample": "// Interface merging (declaration merging)\ninterface User { name: string; }\ninterface User { age: number; }  // merged — User now has both\n\n// Type cannot do this:\ntype Config = { timeout: number } & { retries: number }; // intersection instead"
+  },
+  {
+    "id": "ts-02",
+    "topic": "typescript",
+    "difficulty": "mid",
+    "question": "What are generics in TypeScript and why are they useful?",
+    "answer": "Generics let you write reusable code that works with multiple types while preserving type safety. Instead of using any (which loses type info), you parameterize the type with a placeholder (T) and let the caller or inferencer fill it in. Essential for utility functions, data structures, and APIs that work across types.",
+    "codeExample": "function identity<T>(value: T): T {\n  return value;\n}\n\nconst s = identity('hello'); // s: string\nconst n = identity(42);      // n: number\n\n// With constraints:\nfunction getLength<T extends { length: number }>(arg: T): number {\n  return arg.length;\n}"
+  },
+  {
+    "id": "ts-03",
+    "topic": "typescript",
+    "difficulty": "mid",
+    "question": "What are discriminated unions and when should you use them?",
+    "answer": "A discriminated union is a union of types that all share a common literal property (the discriminant). TypeScript uses the discriminant to narrow the type in switch/if blocks — giving full type safety per branch. Essential for modeling state machines, API responses, and action types in Redux-style code.",
+    "codeExample": "type Shape =\n  | { kind: 'circle'; radius: number }\n  | { kind: 'square'; side: number };\n\nfunction area(s: Shape): number {\n  switch (s.kind) {\n    case 'circle': return Math.PI * s.radius ** 2;\n    case 'square': return s.side ** 2;\n  }\n}"
+  },
+  {
+    "id": "ts-04",
+    "topic": "typescript",
+    "difficulty": "mid",
+    "question": "What are mapped types? Give a practical example.",
+    "answer": "Mapped types transform an existing type by iterating over its keys and applying a transformation. The syntax is { [K in keyof T]: ... }. They're the foundation of most built-in utility types (Partial, Required, Readonly, Record).",
+    "codeExample": "type Nullable<T> = { [K in keyof T]: T[K] | null };\n\ntype User = { name: string; age: number };\ntype NullableUser = Nullable<User>;\n// { name: string | null; age: number | null }"
+  },
+  {
+    "id": "ts-05",
+    "topic": "typescript",
+    "difficulty": "mid",
+    "question": "Name and explain 5 built-in TypeScript utility types.",
+    "answer": "Partial<T> — all properties optional. Required<T> — all properties required. Readonly<T> — all properties readonly. Pick<T, K> — keep only keys K. Omit<T, K> — remove keys K. Also common: Record<K, V> — object type with keys K and values V. ReturnType<F> — the return type of function F. NonNullable<T> — removes null and undefined."
+  },
+  {
+    "id": "ts-06",
+    "topic": "typescript",
+    "difficulty": "senior",
+    "question": "What are conditional types in TypeScript?",
+    "answer": "Conditional types use the ternary syntax: T extends U ? X : Y. At the type level, they branch based on type relationships. They power many utility types. The infer keyword lets you extract types from within a conditional check.",
+    "codeExample": "type UnpackPromise<T> = T extends Promise<infer R> ? R : T;\n\ntype A = UnpackPromise<Promise<string>>; // string\ntype B = UnpackPromise<number>;          // number (not a Promise, returns T)\n\n// Built-in uses the same pattern:\ntype ReturnType<F> = F extends (...args: any) => infer R ? R : never;"
+  },
+  {
+    "id": "ts-07",
+    "topic": "typescript",
+    "difficulty": "mid",
+    "question": "What is the difference between unknown and any?",
+    "answer": "any disables type checking entirely — you can do anything with it, and TS trusts you. unknown is the type-safe counterpart — you can assign anything to it, but you can't do anything with the value without first narrowing the type (typeof, instanceof, type guard). Prefer unknown over any at system boundaries (e.g., JSON.parse returns unknown ideally)."
+  },
+  {
+    "id": "ts-08",
+    "topic": "typescript",
+    "difficulty": "senior",
+    "question": "What is the infer keyword and where is it useful?",
+    "answer": "infer is used inside conditional types to extract (capture) a type from a position in another type. It tells TS 'if this condition matches, capture what's at this position into a type variable R'. Without infer you'd have to know the type in advance.",
+    "codeExample": "// Extract the element type of an array:\ntype ElementType<T> = T extends (infer E)[] ? E : never;\n\ntype A = ElementType<string[]>;  // string\ntype B = ElementType<number[][]>; // number[]\n\n// Extract first argument:\ntype FirstArg<F> = F extends (a: infer A, ...rest: any) => any ? A : never;"
+  },
+  {
+    "id": "ts-09",
+    "topic": "typescript",
+    "difficulty": "junior",
+    "question": "What are keyof and typeof operators?",
+    "answer": "keyof T produces a union of the string/number keys of type T. typeof x (at type level) captures the TypeScript type of a value x — distinct from JavaScript's runtime typeof. Together they let you derive types from existing values and types without duplication.",
+    "codeExample": "const config = { host: 'localhost', port: 3000 };\ntype ConfigKey = keyof typeof config; // 'host' | 'port'\n\nfunction get(key: ConfigKey) {\n  return config[key]; // fully type-safe\n}"
+  },
+  {
+    "id": "ts-10",
+    "topic": "typescript",
+    "difficulty": "senior",
+    "question": "What is declaration merging and module augmentation?",
+    "answer": "Declaration merging: when TypeScript finds multiple declarations with the same name (in the same scope), it merges them into one. Works for interfaces, namespaces, and enums. Module augmentation: you can extend a module's types by re-declaring the module in a .d.ts file and adding to it. Classic use: augmenting Express Request to add your custom fields.",
+    "codeExample": "// augmenting Express\ndeclare module 'express-serve-static-core' {\n  interface Request {\n    user?: { id: string; role: string };\n  }\n}"
+  }
+]
