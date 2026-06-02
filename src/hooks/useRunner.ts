@@ -5,10 +5,12 @@ export interface OutputLine {
   text: string
 }
 
-// Injected into the sandboxed iframe — captures console output and runs code via postMessage
-const RUNNER_HTML = `<!DOCTYPE html><html><body><script>
-const captured = [];
+// Each console.log is streamed immediately as a 'line' message.
+// After the async IIFE settles, we wait ASYNC_BUFFER_MS for any remaining
+// setTimeout/Promise callbacks before sending 'done'.
+const ASYNC_BUFFER_MS = 600
 
+const RUNNER_HTML = `<!DOCTYPE html><html><body><script>
 function serialize(v) {
   if (v === undefined) return 'undefined';
   if (v === null) return 'null';
@@ -17,31 +19,28 @@ function serialize(v) {
   try { return JSON.stringify(v, null, 2); } catch(e) { return String(v); }
 }
 
+function sendLine(type, args) {
+  parent.postMessage({ type: 'line', line: { type, text: args.map(serialize).join(' ') } }, '*');
+}
+
 ['log','error','warn','info'].forEach(m => {
-  const orig = console[m];
-  console[m] = (...args) => {
-    captured.push({ type: m, text: args.map(serialize).join(' ') });
-  };
+  console[m] = (...args) => sendLine(m, args);
 });
 
 window.addEventListener('message', ({ data }) => {
   if (data.type !== 'run') return;
-  captured.length = 0;
-  let error = null;
+
+  const done = (error) => parent.postMessage({ type: 'done', error: error ?? null }, '*');
+
   try {
-    const fn = new Function(data.code);
-    const result = fn();
-    // support async top-level
-    if (result && typeof result.then === 'function') {
-      result
-        .then(() => parent.postMessage({ type: 'done', output: [...captured], error: null }, '*'))
-        .catch(e => parent.postMessage({ type: 'done', output: [...captured], error: e.message }, '*'));
-      return;
-    }
+    // Wrap in async IIFE so top-level await works and we can detect when sync+microtask work is done.
+    const fn = new Function('return (async () => { ' + data.code + ' })()');
+    fn()
+      .then(() => setTimeout(() => done(null), ${ASYNC_BUFFER_MS}))
+      .catch(e  => setTimeout(() => done(e.message), ${ASYNC_BUFFER_MS}));
   } catch(e) {
-    error = e.message;
+    done(e.message);
   }
-  parent.postMessage({ type: 'done', output: [...captured], error }, '*');
 });
 <\/script></body></html>`
 
@@ -60,10 +59,13 @@ export function useRunner() {
     iframeRef.current = iframe
 
     const handler = (e: MessageEvent) => {
-      if (e.data?.type !== 'done') return
-      setOutput(e.data.output ?? [])
-      setError(e.data.error ?? null)
-      setRunning(false)
+      if (e.data?.type === 'line') {
+        // Stream each line immediately as it's logged
+        setOutput(prev => [...prev, e.data.line as OutputLine])
+      } else if (e.data?.type === 'done') {
+        setError(e.data.error ?? null)
+        setRunning(false)
+      }
     }
     window.addEventListener('message', handler)
     return () => {
