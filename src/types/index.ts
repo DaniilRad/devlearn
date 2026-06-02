@@ -16,3 +16,13 @@ export interface Question {
   answer: string
   codeExample?: string
 }
+
+export interface SandboxChallenge {
+  id: string
+  topic: Topic
+  difficulty: Difficulty
+  title: string
+  description: string
+  starterCode: string
+  hints?: string[]
+}

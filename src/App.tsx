@@ -3,6 +3,7 @@ import { Code2, Layers, Moon, Sun, Terminal } from 'lucide-react'
 import FilterBar from './components/FilterBar'
 import FlashCard from './components/FlashCard'
 import Sidebar from './components/Sidebar'
+import SandboxView from './components/sandbox/SandboxView'
 import { allQuestions } from './data'
 import type { Difficulty, Topic } from './types'
 
@@ -15,7 +16,6 @@ export default function App() {
   const [difficulty, setDifficulty] = useState<Difficulty | 'all'>('all')
   const [index, setIndex] = useState(0)
 
-  // Apply dark class to <html>
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark)
   }, [dark])
@@ -37,12 +37,13 @@ export default function App() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      if (mode !== 'flashcards') return
       if (e.key === 'ArrowRight') goNext()
       if (e.key === 'ArrowLeft')  goPrev()
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [goNext, goPrev])
+  }, [goNext, goPrev, mode])
 
   const currentQuestion = filtered[index]
 
@@ -54,44 +55,30 @@ export default function App() {
         bg-neutral-900 dark:bg-neutral-900 bg-white
         px-6 py-3 flex items-center justify-between sticky top-0 z-10
       ">
-        {/* Logo */}
         <div className="flex items-center gap-2 text-sm font-medium text-green-400 dark:text-green-400 text-green-600">
           <Terminal size={16} />
           devlearn
         </div>
 
-        {/* Mode tabs */}
         <nav className="flex items-center gap-1">
-          <button
-            onClick={() => setMode('flashcards')}
-            className={`
-              flex items-center gap-1.5 px-3 py-1.5 text-xs border transition-colors
-              ${mode === 'flashcards'
-                ? 'border-green-800 dark:border-green-800 border-green-300 text-green-400 dark:text-green-400 text-green-700 bg-green-500/5 dark:bg-green-500/5 bg-green-50'
-                : 'border-transparent text-neutral-500 dark:text-neutral-500 text-neutral-400 hover:text-neutral-300 dark:hover:text-neutral-300 hover:text-neutral-600'
-              }
-            `}
-          >
-            <Layers size={13} />
-            flashcards
-          </button>
-          <button
-            onClick={() => setMode('sandbox')}
-            className={`
-              flex items-center gap-1.5 px-3 py-1.5 text-xs border transition-colors
-              ${mode === 'sandbox'
-                ? 'border-green-800 dark:border-green-800 border-green-300 text-green-400 dark:text-green-400 text-green-700 bg-green-500/5 dark:bg-green-500/5 bg-green-50'
-                : 'border-transparent text-neutral-500 dark:text-neutral-500 text-neutral-400 hover:text-neutral-300 dark:hover:text-neutral-300 hover:text-neutral-600'
-              }
-            `}
-          >
-            <Code2 size={13} />
-            sandbox
-            <span className="text-amber-500 text-[10px]">~soon</span>
-          </button>
+          {(['flashcards', 'sandbox'] as Mode[]).map(m => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={`
+                flex items-center gap-1.5 px-3 py-1.5 text-xs border transition-colors
+                ${mode === m
+                  ? 'border-green-800 dark:border-green-800 border-green-300 text-green-400 dark:text-green-400 text-green-700 bg-green-500/5 dark:bg-green-500/5 bg-green-50'
+                  : 'border-transparent text-neutral-500 dark:text-neutral-500 text-neutral-400 hover:text-neutral-300 dark:hover:text-neutral-300 hover:text-neutral-600'
+                }
+              `}
+            >
+              {m === 'flashcards' ? <Layers size={13} /> : <Code2 size={13} />}
+              {m}
+            </button>
+          ))}
         </nav>
 
-        {/* Right side */}
         <div className="flex items-center gap-3">
           <span className="text-xs text-neutral-700 dark:text-neutral-700 text-neutral-400">
             {allQuestions.length} cards
@@ -107,7 +94,7 @@ export default function App() {
       </header>
 
       {/* Body */}
-      <div className="flex flex-1 max-w-4xl mx-auto w-full px-6 py-8 gap-8">
+      <div className="flex flex-1 max-w-5xl mx-auto w-full px-6 py-8 gap-8">
         {mode === 'flashcards' ? (
           <>
             <Sidebar
@@ -115,7 +102,6 @@ export default function App() {
               difficulty={difficulty}
               onTopicSelect={setTopic}
             />
-
             <main className="flex-1 flex flex-col gap-5 min-w-0">
               <FilterBar
                 topic={topic}
@@ -124,7 +110,6 @@ export default function App() {
                 onDifficultyChange={setDifficulty}
                 totalCount={filtered.length}
               />
-
               {currentQuestion ? (
                 <FlashCard
                   question={currentQuestion}
@@ -141,16 +126,7 @@ export default function App() {
             </main>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center">
-            <Code2 size={32} className="text-neutral-700 dark:text-neutral-700 text-neutral-300" />
-            <p className="text-sm text-neutral-400 dark:text-neutral-400 text-neutral-500">
-              // code sandbox — coming in phase 2
-            </p>
-            <p className="text-xs text-neutral-700 dark:text-neutral-700 text-neutral-400 max-w-xs">
-              Monaco editor + in-browser JS runner.
-              Run code directly without leaving the app.
-            </p>
-          </div>
+          <SandboxView dark={dark} />
         )}
       </div>
     </div>

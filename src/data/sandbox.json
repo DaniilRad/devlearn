@@ -1,0 +1,134 @@
+[
+  {
+    "id": "sb-01",
+    "topic": "js-core",
+    "difficulty": "junior",
+    "title": "Event Loop Order",
+    "description": "Predict the output order, then run to verify.\n\nThe event loop processes the call stack first, then drains all microtasks (Promises), then picks the next macrotask (setTimeout/setInterval).\n\nChange the code to test your understanding — swap things around and see what happens.",
+    "starterCode": "console.log('1 - sync');\n\nsetTimeout(() => console.log('2 - timeout'), 0);\n\nPromise.resolve()\n  .then(() => console.log('3 - promise 1'))\n  .then(() => console.log('4 - promise 2'));\n\nconsole.log('5 - sync');\n\n// Expected order: 1, 5, 3, 4, 2\n// Why?",
+    "hints": [
+      "Synchronous code always runs first, top to bottom.",
+      "Promise .then callbacks are microtasks — they run before any macrotask.",
+      "setTimeout is a macrotask — it runs after the microtask queue is empty."
+    ]
+  },
+  {
+    "id": "sb-02",
+    "topic": "js-core",
+    "difficulty": "junior",
+    "title": "Fix the Closure Bug",
+    "description": "This loop prints '5' five times instead of 0, 1, 2, 3, 4.\n\nFix it two different ways:\n1. Replace `var` with `let`\n2. Use an IIFE to create a new scope per iteration\n\nExplain why `var` causes the bug.",
+    "starterCode": "// BUG: prints 5, 5, 5, 5, 5\nfor (var i = 0; i < 5; i++) {\n  setTimeout(() => console.log(i), 0);\n}\n\n// Fix 1: replace var with let (uncomment below)\n// for (let i = 0; i < 5; i++) {\n//   setTimeout(() => console.log(i), 0);\n// }\n\n// Fix 2: IIFE (uncomment below)\n// for (var i = 0; i < 5; i++) {\n//   ((j) => setTimeout(() => console.log(j), 0))(i);\n// }",
+    "hints": [
+      "var is function-scoped, not block-scoped — all iterations share the same `i`.",
+      "By the time the callbacks run, the loop has finished and `i` is 5.",
+      "let creates a new binding per iteration — each closure captures its own `i`."
+    ]
+  },
+  {
+    "id": "sb-03",
+    "topic": "js-core",
+    "difficulty": "junior",
+    "title": "Implement once()",
+    "description": "Implement a `once(fn)` higher-order function that returns a new function.\nThe returned function calls `fn` on the first invocation and returns its result.\nAll subsequent calls return the same result without calling `fn` again.",
+    "starterCode": "function once(fn) {\n  // your implementation here\n}\n\n// --- tests ---\nlet callCount = 0;\nconst greet = once((name) => {\n  callCount++;\n  return `hello, ${name}!`;\n});\n\nconsole.log(greet('world'));  // 'hello, world!'\nconsole.log(greet('again'));  // 'hello, world!' (same result)\nconsole.log(greet('third'));  // 'hello, world!'\nconsole.log('fn called:', callCount); // 1",
+    "hints": [
+      "You need to track whether the function has been called yet.",
+      "Store the result of the first call in a variable in the closure.",
+      "Use a boolean flag `called` and cache the `result`."
+    ]
+  },
+  {
+    "id": "sb-04",
+    "topic": "js-core",
+    "difficulty": "mid",
+    "title": "Implement memoize()",
+    "description": "Implement `memoize(fn)` — a HOF that caches the result of `fn` based on its arguments.\nIf called again with the same arguments, return the cached result without re-running `fn`.",
+    "starterCode": "function memoize(fn) {\n  // your implementation here\n}\n\n// --- tests ---\nlet calls = 0;\nconst expensive = memoize((n) => {\n  calls++;\n  return n * n;\n});\n\nconsole.log(expensive(4));   // 16\nconsole.log(expensive(4));   // 16 (from cache)\nconsole.log(expensive(5));   // 25\nconsole.log(expensive(4));   // 16 (from cache)\nconsole.log('total fn calls:', calls); // should be 2, not 4",
+    "hints": [
+      "Use a Map or object as the cache.",
+      "The cache key should be based on the arguments — JSON.stringify works for simple args.",
+      "Check if the key exists in cache before calling fn."
+    ]
+  },
+  {
+    "id": "sb-05",
+    "topic": "js-core",
+    "difficulty": "mid",
+    "title": "Implement debounce()",
+    "description": "Implement `debounce(fn, delay)` — returns a function that delays invoking `fn` until after `delay` ms have passed since the last call.\n\nUsed to avoid calling expensive functions (API calls, resize handlers) on every event.",
+    "starterCode": "function debounce(fn, delay) {\n  // your implementation here\n}\n\n// --- tests ---\nconst results = [];\nconst log = debounce((msg) => results.push(msg), 50);\n\nlog('a');\nlog('b');\nlog('c');\n\n// After delay, only 'c' should have been pushed\nsetTimeout(() => {\n  console.log('results:', JSON.stringify(results)); // ['c']\n  console.log('length:', results.length);           // 1\n}, 200);",
+    "hints": [
+      "Use setTimeout to delay the call.",
+      "If called again before the delay expires, cancel the previous timer with clearTimeout.",
+      "Store the timer ID in a variable in the closure."
+    ]
+  },
+  {
+    "id": "sb-06",
+    "topic": "js-core",
+    "difficulty": "mid",
+    "title": "Implement flatten()",
+    "description": "Implement `flatten(arr)` that recursively flattens a nested array to any depth.\nDo not use `Array.prototype.flat()`.",
+    "starterCode": "function flatten(arr) {\n  // your implementation here\n}\n\n// --- tests ---\nconsole.log(flatten([1, 2, 3]));                    // [1, 2, 3]\nconsole.log(flatten([1, [2, 3], 4]));               // [1, 2, 3, 4]\nconsole.log(flatten([1, [2, [3, [4]], 5]]));        // [1, 2, 3, 4, 5]\nconsole.log(flatten([[1, 2], [3, [4, [5, 6]]]]));   // [1, 2, 3, 4, 5, 6]",
+    "hints": [
+      "Use Array.isArray() to detect nested arrays.",
+      "Recursion: if an element is an array, flatten it and spread the result.",
+      "reduce() + concat works well here, or use a simple for loop with push."
+    ]
+  },
+  {
+    "id": "sb-07",
+    "topic": "js-core",
+    "difficulty": "senior",
+    "title": "Implement curry()",
+    "description": "Implement `curry(fn)` that converts a multi-argument function into a curried version.\nThe curried function should accept arguments one at a time (or in groups) and only call `fn` when enough arguments have been collected.",
+    "starterCode": "function curry(fn) {\n  // your implementation here\n}\n\n// --- tests ---\nconst add = curry((a, b, c) => a + b + c);\n\nconsole.log(add(1)(2)(3));   // 6  — one at a time\nconsole.log(add(1, 2)(3));   // 6  — grouped\nconsole.log(add(1)(2, 3));   // 6  — grouped\nconsole.log(add(1, 2, 3));   // 6  — all at once\n\nconst multiply = curry((a, b) => a * b);\nconsole.log(multiply(3)(4)); // 12",
+    "hints": [
+      "Check fn.length to know how many arguments are needed.",
+      "If enough args have been collected, call the original fn.",
+      "Otherwise, return a new function that collects more args (recursive currying).",
+      "Use rest params (...args) and spread to accumulate arguments."
+    ]
+  },
+  {
+    "id": "sb-08",
+    "topic": "js-core",
+    "difficulty": "senior",
+    "title": "Implement a Simple EventEmitter",
+    "description": "Implement an EventEmitter class with:\n- `on(event, listener)` — register a listener\n- `off(event, listener)` — remove a listener\n- `emit(event, ...args)` — call all listeners for the event\n- `once(event, listener)` — listener fires only once, then auto-removes",
+    "starterCode": "class EventEmitter {\n  constructor() {\n    // your implementation here\n  }\n\n  on(event, listener) {\n    // register\n  }\n\n  off(event, listener) {\n    // unregister\n  }\n\n  emit(event, ...args) {\n    // call listeners\n  }\n\n  once(event, listener) {\n    // fires once then removes itself\n  }\n}\n\n// --- tests ---\nconst ee = new EventEmitter();\nconst log = (msg) => console.log('received:', msg);\n\nee.on('data', log);\nee.emit('data', 'hello');  // received: hello\nee.emit('data', 'world');  // received: world\nee.off('data', log);\nee.emit('data', 'gone');   // (nothing)\n\nee.once('ping', () => console.log('pong'));\nee.emit('ping'); // pong\nee.emit('ping'); // (nothing)",
+    "hints": [
+      "Store listeners in a Map: event name → Set of listeners.",
+      "For once(), wrap the listener in a wrapper that calls off() after firing.",
+      "off() should remove only the specific listener function reference."
+    ]
+  },
+  {
+    "id": "sb-09",
+    "topic": "js-core",
+    "difficulty": "mid",
+    "title": "Implement Promise.all()",
+    "description": "Implement your own version of `Promise.all(promises)` without using the built-in.\nIt should resolve with an array of results when all promises resolve, and reject immediately if any promise rejects.",
+    "starterCode": "function promiseAll(promises) {\n  // your implementation here\n}\n\n// --- tests ---\npromiseAll([\n  Promise.resolve(1),\n  Promise.resolve(2),\n  Promise.resolve(3),\n]).then(results => console.log('all:', results)); // all: [1, 2, 3]\n\npromiseAll([\n  Promise.resolve('a'),\n  new Promise(resolve => setTimeout(() => resolve('b'), 10)),\n  Promise.resolve('c'),\n]).then(results => console.log('ordered:', results)); // ordered: ['a', 'b', 'c']\n\npromiseAll([\n  Promise.resolve(1),\n  Promise.reject('boom'),\n  Promise.resolve(3),\n]).catch(err => console.log('error:', err)); // error: boom",
+    "hints": [
+      "Return a new Promise.",
+      "Track how many promises have resolved using a counter.",
+      "Store results in an array at the correct index (not push — order matters).",
+      "Reject immediately on the first rejection."
+    ]
+  },
+  {
+    "id": "sb-10",
+    "topic": "js-core",
+    "difficulty": "senior",
+    "title": "Implement a Pipeline (pipe)",
+    "description": "Implement `pipe(...fns)` that composes functions left-to-right.\nThe output of each function becomes the input to the next.\nAlso implement `pipeAsync(...fns)` that works with async functions.",
+    "starterCode": "function pipe(...fns) {\n  // your implementation here\n}\n\nasync function pipeAsync(...fns) {\n  // your implementation here\n}\n\n// --- sync tests ---\nconst double  = x => x * 2;\nconst addOne  = x => x + 1;\nconst square  = x => x * x;\n\nconst transform = pipe(double, addOne, square);\nconsole.log(transform(3)); // double(3)=6, addOne(6)=7, square(7)=49\nconsole.log(transform(5)); // double(5)=10, addOne(10)=11, square(11)=121\n\n// --- async tests ---\nconst fetchUser  = async id  => ({ id, name: 'Alice' });\nconst addRole    = async user => ({ ...user, role: 'admin' });\nconst formatUser = async user => `${user.name} (${user.role})`;\n\nconst getUser = pipeAsync(fetchUser, addRole, formatUser);\ngetUser(1).then(result => console.log(result)); // Alice (admin)",
+    "hints": [
+      "pipe() can be implemented with reduce: fns.reduce((acc, fn) => fn(acc), initialValue).",
+      "The reduce starts with the first argument passed to the piped function.",
+      "For pipeAsync, use reduce with Promise chaining: (acc, fn) => acc.then(fn)."
+    ]
+  }
+]
